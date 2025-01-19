@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css">
+    <title>Word Search - Intermediate</title>
+
+    <style>
+        #printButton{
+            display: none;
+        }
+        #refreshButton{
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="homeButton">
+        <a href="main.html">Home</a>
+    </div>
+
+    <div class="refreshButton">
+        <a href="level2.html" id="refreshButton">Upload New Sort</a>
+    </div>
+
+    <input type="file" id="csvInput" accept=".csv">
+
+    <div id="printContent">
+        <h3 id="docName"></h3>
+        <div class="gridContainer">  
+            <table id="wordSearch" class="wordSearch"></table>
+        </div>
+        <div class="wordListContainer">
+            <ul id="wordList" class="wordList"></ul>
+        </div>
+    </div>
+
+    <div class="downloadButton">
+        <button id="printButton" onclick="window.print()">Print</button>
+    </div>
+    <script>
+        const printButton = document.getElementById("printButton");
+        const docName = document.getElementById("docName");
+        const csvInput = document.getElementById("csvInput");
+        const refreshButton = document.getElementById("refreshButton");
+
+        document.getElementById("csvInput").addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const content = e.target.result;
+                    const words = content.split('\n').map(word => word.trim().toUpperCase());
+                    console.log(words);
+                    generateWordSearch(words);
+                    const fileName = file.name.replace(/\.csv$/i, "");
+                    docName.textContent = fileName + " - Intermediate";
+                    csvInput.style.display = "none";
+                    refreshButton.style.display = "inline-block";
+                    console.log("successful");
+
+                };
+                reader.readAsText(file);
+            }
+        })
+
+        function generateWordSearch(words) {
+            var gridRows;
+            var gridCols;
+            if (words.length > 12) {
+                gridRows = 18;
+                gridCols = 12;
+            } else {
+                gridRows = 12;
+                gridCols = 12;
+            }
+
+            const grid = Array.from({ length: gridRows }, () => Array(gridCols).fill(''));
+
+
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                if (hasSpace(grid, word)) {
+                    placeWord(grid, word);
+                    //console.log("placed " + i);
+                } else if (word.length > 3) {
+                    continue;
+                } else {
+                    console.log("No more space in the crossword!");
+                    break;
+                }
+            }
+
+            for (let row = 0; row < gridRows; row++) {
+                for (let col = 0; col < gridCols; col++) {
+                    if (!grid[row][col]) {
+                        grid[row][col] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                    }
+
+                }
+            }
+
+            displayGrid(grid);
+            displayWordList(words);
+
+            printButton.style.display = "inline-block";
+
+        }
+
+        function placeWord(grid, word) {
+            const gridRow = grid.length;
+            const gridCol = grid[0].length;
+            let placed = false;
+
+            while (!placed) {
+                const direction = Math.floor(Math.random() * 3);
+                //console.log(direction);
+                const row = Math.floor(Math.random() * gridRow);
+                const col = Math.floor(Math.random() * gridCol);
+                //console.log("row " + row);
+                //console.log("col " + col);
+
+                if (direction === 0 && col + word.length <= gridCol) {
+                    //console.log(canPlaceWord(grid, word, direction, row, col))
+                    if (canPlaceWord(grid, word, direction, row, col)) {
+                        for (let i = 0; i < word.length; i++) {
+                            grid[row][col + i] = word[i];
+                        }
+                        placed = true;
+                    }
+
+                }
+                if (direction === 1 && row + word.length <= gridRow) {
+                    //console.log(canPlaceWord(grid, word, direction, row, col))
+                    if (canPlaceWord(grid, word, direction, row, col)) {
+                        for (let i = 0; i < word.length; i++) {
+                            grid[row + i][col] = word[i];
+                        }
+                        placed = true;
+                    }
+
+                }
+
+                if (direction === 2 && row + word.length <= gridRow && col + word.length <= gridCol) {
+                    //console.log(canPlaceWord(grid, word, direction, row, col));
+                    if (canPlaceWord(grid, word, direction, row, col)){
+                        for (let i = 0; i < word.length; i++){
+                            grid[row + i][col + i] = word[i];
+                        }
+                        placed = true;
+                    }
+                }
+            }
+        }
+
+        function canPlaceWord(grid, word, direction, row, col) {
+            const wordSize = word.length;
+            if (direction === 0) {
+                for (let c = col; c < col + wordSize; c++) {
+                    //console.log("grid is " + grid[row][c]);
+                    if (grid[row][c] !== '') {
+                        return false;
+                    }
+                } return true;
+            } else if (direction === 1) {
+                for (let r = row; r < row + wordSize; r++) {
+                    //console.log("grid is " + grid[r][col]);
+                    if (grid[r][col] !== '') {
+                        return false;
+                    }
+                }
+                return true;
+            } else if (direction === 2) {
+                for (let r = row; r < row + wordSize; r++) {
+                    for (let c = col; c < col + wordSize; c++) {
+                        if (grid[r][c] !== '') {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+        }
+
+        function hasSpace(grid, word) {
+            const gridR = grid.length;
+            const gridC = grid[0].length;
+            const wordLength = word.length;
+            var hasSpace = false;
+            for (let row = 0; row < gridR - wordLength; row++) {
+                for (let col = 0; col < gridC; col++) {
+                    var listener = 0;
+                    for (let j = row; j < wordLength; j++) {
+                        if (grid[j][col] != null) {
+                            listener = 1;
+                        }
+
+                    }
+                    if (listener === 0) {
+                        hasSpace = true;
+                        return true;
+                    }
+
+                }
+            }
+            for (let col = 0; col < gridC - wordLength; col++) {
+                for (let row = 0; row < gridR; row++) {
+                    var listener2 = 0;
+                    for (let j = col; j < wordLength; j++) {
+                        if (grid[row][j] != null) {
+                            listener2 = 1;
+                        }
+
+                    }
+                    if (listener2 === 0) {
+                        hasSpace = true;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+
+        }
+
+        function displayGrid(grid) {
+            const table = document.getElementById('wordSearch');
+            table.innerHTML = '';
+
+            grid.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+
+            table.style.borderStyle = "solid";
+        }
+
+        function displayWordList(words) {
+            const wordList = document.getElementById('wordList')
+            wordList.innerHTML = '';
+            words.forEach(word => {
+                const listItem = document.createElement('li');
+                listItem.textContent = word;
+                if (word !== "") {
+                    wordList.appendChild(listItem);
+                }
+
+            })
+        }
+
+    </script>
+</html>
