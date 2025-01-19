@@ -18,6 +18,10 @@
 </head>
 
 <body>
+    <div class="nameArea">
+        <h3 id="nameInput"></h3>
+    </div>
+
     <div class="homeButton">
         <a href="main.html">Home</a>
     </div>
@@ -46,6 +50,7 @@
         const docName = document.getElementById("docName");
         const csvInput = document.getElementById("csvInput");
         const refreshButton = document.getElementById("refreshButton");
+        const nameInput = document.getElementById("nameInput");
 
         document.getElementById("csvInput").addEventListener("change", function (event) {
             const file = event.target.files[0];
@@ -57,7 +62,8 @@
                     console.log(words);
                     generateWordSearch(words);
                     const fileName = file.name.replace(/\.csv$/i, "");
-                    docName.textContent = fileName + " - Intermediate";
+                    docName.textContent = fileName;
+                    nameInput.textContent = "Name:________________";
                     csvInput.style.display = "none";
                     refreshButton.style.display = "inline-block";
                     console.log("successful");
