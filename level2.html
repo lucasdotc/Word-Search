@@ -34,7 +34,7 @@
 
     <div id="printContent">
         <h3 id="docName"></h3>
-        <div class="gridContainer">  
+        <div class="gridContainer">
             <table id="wordSearch" class="wordSearch"></table>
         </div>
         <div class="wordListContainer">
@@ -60,6 +60,7 @@
                     const content = e.target.result;
                     const words = content.split('\n').map(word => word.trim().toUpperCase());
                     console.log(words);
+                    wordSort(words);
                     generateWordSearch(words);
                     const fileName = file.name.replace(/\.csv$/i, "");
                     docName.textContent = fileName;
@@ -72,6 +73,8 @@
                 reader.readAsText(file);
             }
         })
+
+        let wordsUsed = new Array();
 
         function generateWordSearch(words) {
             var gridRows;
@@ -93,6 +96,7 @@
                     placeWord(grid, word);
                     //console.log("placed " + i);
                 } else if (word.length > 3) {
+                    console.log("Word " + word + " is too long to fit in the crossword!");
                     continue;
                 } else {
                     console.log("No more space in the crossword!");
@@ -100,7 +104,7 @@
                 }
             }
 
-            for (let row = 0; row < gridRows; row++) {
+           for (let row = 0; row < gridRows; row++) {
                 for (let col = 0; col < gridCols; col++) {
                     if (!grid[row][col]) {
                         grid[row][col] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
@@ -110,7 +114,7 @@
             }
 
             displayGrid(grid);
-            displayWordList(words);
+            displayWordList(wordsUsed);
 
             printButton.style.display = "inline-block";
 
@@ -136,6 +140,8 @@
                             grid[row][col + i] = word[i];
                         }
                         placed = true;
+                        wordsUsed.push(word);
+                        //console.log("horizontally placed "+word);
                     }
 
                 }
@@ -146,6 +152,8 @@
                             grid[row + i][col] = word[i];
                         }
                         placed = true;
+                        wordsUsed.push(word);
+                        //console.log("vertically placed "+word);
                     }
 
                 }
@@ -157,6 +165,8 @@
                             grid[row + i][col + i] = word[i];
                         }
                         placed = true;
+                        wordsUsed.push(word);
+                        //console.log("diagonally placed "+word);
                     }
                 }
             }
@@ -196,25 +206,10 @@
             const gridR = grid.length;
             const gridC = grid[0].length;
             const wordLength = word.length;
+            console.log("word is " + word);
             var hasSpace = false;
-            for (let row = 0; row < gridR - wordLength; row++) {
-                for (let col = 0; col < gridC; col++) {
-                    var listener = 0;
-                    for (let j = row; j < wordLength; j++) {
-                        if (grid[j][col] != null) {
-                            listener = 1;
-                        }
-
-                    }
-                    if (listener === 0) {
-                        hasSpace = true;
-                        return true;
-                    }
-
-                }
-            }
-            for (let col = 0; col < gridC - wordLength; col++) {
-                for (let row = 0; row < gridR; row++) {
+            for (let col = 0; col < gridC; col++) {
+                for (let row = 0; row < gridR - wordLength; row++) {
                     var listener2 = 0;
                     for (let j = col; j < wordLength; j++) {
                         if (grid[row][j] != null) {
@@ -224,6 +219,42 @@
                     }
                     if (listener2 === 0) {
                         hasSpace = true;
+                        //console.log("has space vertical");
+                        return true;
+                    }
+                }
+            }
+
+            for (let row = 0; row < gridR; row++) {
+                for (let col = 0; col < gridC - wordLength; col++) {
+                    var listener = 0;
+                    for (let j = row; j < wordLength; j++) {
+                        if (grid[j][col] != null) {
+                            listener = 1;
+                        }
+
+                    }
+                    if (listener === 0) {
+                        hasSpace = true;
+                        //console.log("has space horizontal");
+                        return true;
+                    }
+
+                }
+            }
+
+            for (let row = 0; row < gridR - wordLength; row++) {
+                for (let col = 0; col < gridC - wordLength; col++) {
+                    var listener3 = 0;
+                    for (let j = 0; j < wordLength; j++) {
+                        if (grid[row + j][col + j] != null) {
+                            listener3 = 1;
+                        }
+
+                    }
+                    if (listener3 === 0) {
+                        hasSpace = true;
+                        //console.log("has space diagonal");
                         return true;
                     }
                 }
@@ -250,10 +281,10 @@
             table.style.borderStyle = "solid";
         }
 
-        function displayWordList(words) {
+        function displayWordList(wordsUsed) {
             const wordList = document.getElementById('wordList')
             wordList.innerHTML = '';
-            words.forEach(word => {
+            wordsUsed.forEach(word => {
                 const listItem = document.createElement('li');
                 listItem.textContent = word;
                 if (word !== "") {
@@ -261,6 +292,18 @@
                 }
 
             })
+        }
+
+        function wordSort(words){
+            for (let i = 0; i < words.length; i++){
+                for (let j = i + 1; j < words.length; j++){
+                    if (words[i].length < words[j].length){
+                        let temp = words[i];
+                        words[i] = words[j];
+                        words[j] = temp;
+                    }
+                }
+            }
         }
 
     </script>
