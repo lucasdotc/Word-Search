@@ -23,7 +23,7 @@
     </div>
 
     <div class="homeButton">
-        <a href="index.html">Home</a>
+        <a href="index.html" id="homeButton">Home</a>
     </div>
 
     <div class="refreshButton">
@@ -43,12 +43,13 @@
     </div>
 
     <div class="downloadButton">
-        <button id="printButton" onclick="window.print()">Print</button>
+        <button id="printButton">Print</button>
     </div>
     <script>
         const printButton = document.getElementById("printButton");
         const docName = document.getElementById("docName");
         const csvInput = document.getElementById("csvInput");
+        const homeButton = document.getElementById("homeButton")
         const refreshButton = document.getElementById("refreshButton");
         const nameInput = document.getElementById("nameInput");
 
@@ -305,6 +306,16 @@
                 }
             }
         }
+
+        printButton.addEventListener('click', function () {
+            printButton.style.display = 'none';
+            homeButton.style.display = 'none';
+            refreshButton.style.display = 'none';
+            window.print();
+            printButton.style.display = 'inline-block';
+            homeButton.style.display = 'inline-block';
+            refreshButton.style.display = 'inline-block';
+        });
 
     </script>
 </html>
